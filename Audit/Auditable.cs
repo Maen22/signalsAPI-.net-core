@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Server.Audit
 {
@@ -11,8 +12,13 @@ namespace Server.Audit
 
     public abstract class Auditable<TId> : Auditable
     {
+        [MaxLength(20)]
         public virtual TId CreatedBy { get; set; }
+
+        [MaxLength(20)]
         public virtual TId UpdatedBy { get; set; }
+
+        [MaxLength(20)]
         public virtual TId DeletedBy { get; set; }
     }
 }

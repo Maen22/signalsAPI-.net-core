@@ -6,6 +6,7 @@ using Server.Audit;
 using Server.Authentication;
 using Server.Entities;
 using System;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,31 +30,30 @@ namespace Server.Helpers
 
         public override int SaveChanges()
         {
-            var user = GetCurrentUserInfo().Result;
-            this.EnsureAudit<string>(user?.Id);
+            var userId= GetCurrentUserInfo().Result;
+            this.EnsureAudit<string>(userId);
             return base.SaveChanges();
         }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var user = GetCurrentUserInfo().Result;
-            this.EnsureAudit<string>(user?.Id);
+            var userId = GetCurrentUserInfo().Result;
+            this.EnsureAudit<string>(userId);
             return base.SaveChangesAsync(cancellationToken);
         }
 
-        private async Task<ApplicationUser> GetCurrentUserInfo()
+        private async Task<string> GetCurrentUserInfo()
         {
             IHttpContextAccessor _httpContextAccessor = (IHttpContextAccessor)_serviceProvider.GetService(typeof(IHttpContextAccessor));
             var userManager = _serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-            ApplicationUser user = null;
+            string userId = null;
 
             if (_httpContextAccessor.HttpContext?.User != null)
             {
-                var claimsPrincipal = _httpContextAccessor.HttpContext?.User;
-                user = await userManager.GetUserAsync(claimsPrincipal);
+                userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             }
-            return user;
+            return userId;
         }
     }
 }
